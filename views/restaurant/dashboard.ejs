@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title><%= restaurant.name %> Dashboard</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="/restaurant.css" />
+	</head>
+	<body>
+		<div class="container py-5">
+			<div class="position-relative mb-4">
+			<h1 class="text-center"><%= restaurant.name %> Menu Dashboard</h1>
+			</div>
+			
+			<div class="management">
+				<div class="details">
+					<details class="details__item" open name="tab-14">
+						<summary class="details__link">
+							<h2>Menu Items</h2>
+						</summary>
+						<div class="details__body">
+							<% if (menus && menus.length > 0) { %>
+							<table class="table table-responsive order-table">
+								<thead>
+									<tr>
+										<th><h3>Dish Name</h3></th>
+										<th><h3>Price</h3></th>
+										<th id="action-column"><h3>Actions</h3></th>
+									</tr>
+								</thead>
+								<tbody>
+									<% menus.forEach(menu => { %>
+									<tr>
+										<td><h5><%= menu.dish_name %></h5></td>
+										<td><h5>$<%= menu.price.toFixed(2) %></h5></td>
+										<td id="action-column">
+											<form
+												action="/restaurant/menu/delete/<%= menu.id %>"
+												method="post"
+												style="display: inline">
+												<button type="submit" class="delete">Delete</button>
+											</form>
+											&nbsp;&nbsp;&nbsp;
+											<form
+												action="/restaurant/menu/edit/<%= menu.id %>"
+												method="get"
+												style="display: inline">
+												<button type="submit" class="submit">Edit</button>
+											</form>
+										</td>
+									</tr>
+									<% }) %>
+								</tbody>
+							</table>
+							<% } else { %>
+							<p>No menu items yet.</p>
+							<% } %>
+							
+							<a class="float-new" href="#pop"> + New Dishes</a>
+
+							
+							<div id="pop" class="overlay">
+								<div class="popup-card" id="popupCard">
+									<h2>Add New Menu Item</h2>
+									<form action="/restaurant/menu/new" method="post" class="newdish">
+										<input type="hidden" name="restaurant" value="<%= restaurant.name %>" />
+										<input type="text" name="dish_name" placeholder="Dish Name" required />
+										<input type="number" name="price" step="0.01" placeholder="Price" required />
+										<a class="button close" id="cancel-button" href="#">Cancel</a>
+										<button type="submit" class="confirm-button">Add</button>
+									</form>
+								</div>
+							</div>
+						</div>
+					</details>
+
+					<!-- ===== ORDERS SECTION ===== -->
+					<details class="details__item" open name="tab-14">
+						<summary class="details__link">
+							<h2>Orders</h2>
+						</summary>
+						<div class="details__body">
+							<table class="table table-responsive order-table">
+								<thead>
+									<tr>
+										<th><h3>Order ID</h3></th>
+										<th><h3>Customer</h3></th>
+										<th><h3>Address</h3></th>
+										<th><h3>Created At</h3></th>
+										<th><h3>Rider</h3></th>
+										<th><h3>Items</h3></th>
+										<th><h3>Actions</h3></th>
+									</tr>
+								</thead>
+								<tbody id="orders-body">
+									<% if (orders && orders.length > 0) { %> <% orders.forEach(order => { %>
+									<tr>
+										<td><h5><%= order.id %></h5></td>
+										<td><h5><%= order.customer_name || '-' %></h5></td>
+										<td><h5><%= order.customer_address %></h5></td>
+										<td><h5><%= order.created_at %></h5></td>
+										<td><h5><%= order.rider_name || '-' %></h5></td>
+										<td><h5><%= order.context %></h5></td>
+										<td>
+											<% if (!order.restaurant_completed) { %>
+											<form
+												action="/restaurant/complete/<%= order.id %>"
+												method="post"
+												style="display: inline">
+												<input type="hidden" name="restaurant" value="<%= restaurant.name %>" />
+												<button type="submit" class="complete">Mark as Completed</button>
+											</form>
+											<% } %>
+										</td>
+									</tr>
+									<% }) %> <% } else { %>
+									<tr>
+										<td colspan="7">No orders yet.</td>
+									</tr>
+									<% } %>
+								</tbody>
+							</table>
+						</div>
+					</details>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
+
+	<!-- Socket.io must be loaded BEFORE your script -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+	if (typeof io !== "undefined") {
+		const socket = io();
+		const restaurantName = "<%= restaurant.name %>";
+
+		// Listen for new orders from server
+		socket.on("newOrder", (data) => {
+			if (data.restaurantName === restaurantName) {
+				fetchOrders();
+			}
+		});
+
+		// Fetch and update order list
+		async function fetchOrders() {
+			try {
+				const response = await fetch(
+					`/restaurant/orders?name=${encodeURIComponent(restaurantName)}`
+				);
+
+				if (!response.ok) return;
+
+				const orders = await response.json();
+				const tbody = document.querySelector("#orders-body");
+				tbody.innerHTML = "";
+
+				if (orders.length === 0) {
+					tbody.innerHTML = "<tr><td colspan='7'>No orders yet.</td></tr>";
+					return;
+				}
+
+				orders.forEach((order) => {
+					const row = document.createElement("tr");
+					row.innerHTML = `
+				<td>${order.id}</td>
+				<td>${order.customer_name || "-"}</td>
+				<td>${order.customer_address}</td>
+				<td>${order.created_at}</td>
+				<td>${order.rider_name || "-"}</td>
+				<td>${order.context}</td>
+				<td>
+					${
+						order.restaurant_completed
+							? ""
+							: `
+							<form action="/restaurant/complete/${order.id}" method="post" style="display:inline">
+								<input type="hidden" name="restaurant" value="${restaurantName}" />
+								<button type="submit" class="complete">Mark as Completed</button>
+							</form>`
+					}
+				</td>
+			`;
+					tbody.appendChild(row);
+				});
+			} catch (err) {
+				// silently ignore errors
+			}
+		}
+
+		// Initial load
+		fetchOrders();
+	}
+
+</script>

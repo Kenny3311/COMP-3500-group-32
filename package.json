@@ -1,0 +1,21 @@
+{
+	"name": "comp-3500-group-32",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node server.js"
+	},
+	"dependencies": {
+		"body-parser": "latest",
+		"ejs": "latest",
+		"express": "latest",
+		"better-sqlite3": "latest",
+		"socket.io": "latest",
+		"express-session": "latest"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": ""
+}

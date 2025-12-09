@@ -1,0 +1,335 @@
+body{
+	background: #ece0ce;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+}
+
+h1 {
+    color: #323232;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.container{
+	color: #323232;
+}
+
+/* menu management part*/
+.management{
+    display: center;
+    border-radius: 20px;
+	background-color: #fefefd;
+	color: #323232;
+    padding: 10px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+}
+
+h3{
+	color: #323232;
+	font-weight: 550;
+}
+
+.details {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  background-color: #7C554B;
+  border-radius: 20px;
+  overflow: clip;
+}
+
+.details__item {
+  display: contents;
+}
+
+.details__item[open] {
+  --details-link-bg: #fefefd;
+  --details-pointer-events: none;
+  --details-link-border-radius: .5rem .5rem 0 0;
+}
+
+.details__item[open]::details-content {
+  display: contents;
+}
+
+.details__link {
+  display: block;    
+  padding: .5rem 1.5rem;
+  background-color: var(--details-link-bg, #7C554B);
+  border-radius: var(--details-link-border-radius, 0);
+  list-style: none;
+  order: 0;
+  cursor: pointer;
+  font-weight: 600;
+  pointer-events: var(--details-pointer-events);
+}
+
+.details__body {
+  order: 1;
+  padding: 2rem;
+  width: 100%;
+  background-color: #fefefd;
+}
+
+summary {
+    list-style: none;    
+    cursor: pointer;    
+    outline: none;    
+}
+
+details[open] summary::-webkit-details-marker {
+    display: none;
+}
+
+/* new product popup card */
+.float-new{
+    text-decoration: none;
+    position: absolute;
+	display: flex;
+    right:20px;
+    bottom: 20px;
+    margin: 10px;
+	justify-content: center;
+	align-items: center;
+    height: 45px;
+    width: 160px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 8px;
+    background-color: #C8AD55;
+    color: #fefefd;
+    transition: 0.3s;
+    font-weight: 500;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+}
+
+.float-new:hover{
+	filter: brightness(80%);
+    cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  transition: opacity 0.3s;
+  visibility: hidden;
+  opacity: 0;
+}
+.overlay:target {
+  visibility: visible;
+  opacity: 1;
+}
+
+.popup-card {
+    position: fixed;
+    top: 50%; 
+    left: 50%; 
+    height: 210px;
+    transform: translate(-50%, -50%); 
+    background-color: #C8AD55;
+    padding: 20px;
+    border-radius: 10px; 
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); 
+    transition: all 0.4s ease-in-out;
+}
+
+.newdish{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.newdish input{
+    margin: 5px;
+    padding:5px;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    background-color: #fefefd;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+    border: none;
+}
+
+.newdish input:focus{
+    outline: none;
+}
+
+#cancel-button{
+    text-decoration: none;
+    position: absolute;
+	display: flex;
+    left:20px;
+    bottom: 15px;
+	justify-content: center;
+	align-items: center;
+    height: 30px;
+    width: 70px;
+    border: none;
+    border-radius: 8px;
+    background-color: #000009;
+    color: #fefefd;
+    transition: 0.3s;
+    font-weight: 500;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+}
+
+#cancel-button:hover{
+	filter: brightness(1.6);
+	transform: scale(1.05);
+    cursor: pointer;
+}
+
+.confirm-button{
+    position: absolute;
+	right: 20px;
+	bottom: 15px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+    height: 30px;
+    width: 70px;
+    border: none;
+    border-radius: 8px;
+    background-color: #717EC3;
+    color: #fefefd;
+    transition: 0.3s;
+    font-weight: 600;
+}
+.confirm-button:hover{
+	background-color: #fefefd;
+	color: #717EC3;
+	transform: scale(1.1);
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.2);
+}
+
+#action-column{
+    text-align: center;
+}
+
+h5{
+	color: #323232 !important;
+	font-weight: 450 !important;
+}
+
+.submit{
+	justify-content: center;
+	align-items: center;
+    height: 30px;
+    width: 70px;
+    border: none;
+    border-radius: 8px;
+    background-color: #C8AD55;
+    color: #fefefd;
+    transition: 0.3s;
+    font-weight: 600;
+}
+
+.submit:hover{
+	transform: scale(1.2);
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.2);
+}
+
+.delete{
+    justify-content: center;
+	align-items: center;
+    height: 30px;
+    width: 70px;
+    border: none;
+    border-radius: 8px;
+    background-color: #717EC3;
+    color: #fefefd;
+    transition: 0.3s;
+    font-weight: 600;
+}
+
+.delete:hover{
+    background-color: #E55934;
+	transform: scale(1.4);
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.2);
+}
+
+.complete{
+    justify-content: center;
+	align-items: center;
+    height: 50px;
+    border: none;
+    border-radius: 5px;
+    background-color: #717EC3;
+    color: #fefefd;
+    transition: 0.3s;
+    font-weight: 600;
+}
+
+.complete:hover{
+	transform: scale(1.2);
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* edit menu */
+.management-edit{
+    display: center;
+    border-radius: 20px;
+	background-color: #717EC3;
+	color: #fefefd;
+    padding: 10px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+}
+
+.edit-form{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.edit-form label{
+    font-size :20px;
+    font-weight: 550;
+}
+
+.edit-form input{
+    margin: 5px;
+    padding:5px;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    background-color: #fefefd;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+    border: none;
+}
+
+.edit-form input:focus{
+    outline: none;
+}
+
+.change-button{
+    position: absolute;
+	right: 20px;
+	bottom: 15px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+    height: 30px;
+    border: none;
+    border-radius: 8px;
+    background-color: #fefefd;
+    color: #717EC3;
+    transition: 0.3s;
+    font-weight: 600;
+}
+
+.change-button:hover{
+	background-color:#C8AD55;
+	color: #fefefd;
+	transform: scale(1.1);
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.2);
+}

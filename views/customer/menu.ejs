@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,remove" />
+		<link rel="stylesheet" href="/customer_menu.css" />
+		<title>Dashboard</title>
+	</head>
+	<body>
+		<div class="container py-5">
+			<div class="container position-relative mb-4">
+				<h1 class="text-center"><%=id%></h1>
+				<a href="/customer" class="btn btn-outline-primary position-absolute top-0 end-0" id="back-button">Back to Restaurants List</a>
+			</div>
+			<div class="row g-4">
+				<% menus.forEach((m) => { %>
+				<div class="col-12">
+					<div class="card shadow-sm" id="restaurant-card">
+						<div class="card-body">
+							<h2 class="goods-title" id="goods-title-<%= m.id%>"><%= m.dish_name %></h2>
+							<div class="goods-confirm">
+								<p class="goods-price">
+									<span class="goods-price-unit" >$</span>
+									<span class="itemPrice" id="itemPrice-<%= m.id%>"><%= m.price %></span>
+								</p>
+								<div class="goods-btns">
+									<i index="<%= m.id %>" class="material-symbols-outlined minus">remove</i>
+									<span id="quantity-<%= m.id %>" style="font-size: 25px;">0</span>
+									<i index="<%= m.id %>" class="material-symbols-outlined plus">add</i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<% }) %>
+			</div>
+			<div class="footer">
+				<div class="car-container">
+					<div class="car">
+						<img src="/images/shopping-cart.png" width="75" />
+						<span class="totalGoods">0</span>
+					</div>
+					<div class="car-price">
+						<span class="unit">$</span>
+						<span class="totalPrice">0.00</span>
+					</div>
+					<div class="footer-car-tip">Delivery fee $10</div>
+				</div>
+				<a class="btn payBtn" onclick="checkOut()">Check out</a>
+			</div>
+			<div class="popup-card" id="popupCard">
+				<h2>Order Confirm</h2>
+				<p id="popup-card-context"></p>
+				<br>
+				<button id="popup-cancel" onclick="hidePopup()">Cancel</button>
+				<form action="/customer/neworder" method="post">
+					<input type="hidden" name="orderDetails" id="orderDetailsInput" />
+					<button id="popup-pay" type="submit">Pay</button>
+				</form>
+			</div>
+		</div>
+	</body>
+	<script>
+		class Trolley {
+			constructor() {
+				this.quantities = {};
+				this.sum = 0;
+				this.sumPrice = 0;
+				this.doms = {
+					totalPrice: document.querySelector(".totalPrice"),
+					totalGoods: document.querySelector(".totalGoods"),
+				};
+				this.listenEvent();
+			}
+
+			listenEvent() {
+				const minusButton = document.querySelectorAll(".minus");
+				const plusButton = document.querySelectorAll(".plus");
+
+				minusButton.forEach((btn) => {
+					btn.addEventListener("click", (event) => {
+						const index = event.target.getAttribute("index");
+						this.reduce(index);
+						console.log(index, this.quantities[index], this.sum, this.sumPrice);
+						this.updatetotalGoods();
+						this.updatetotalPrice();
+					});
+				});
+
+				plusButton.forEach((btn) => {
+					btn.addEventListener("click", (event) => {
+						const index = event.target.getAttribute("index");
+						this.add(index);
+						console.log(index, this.quantities[index], this.sum, this.sumPrice);
+						this.updatetotalGoods();
+						this.updatetotalPrice();
+					});
+				});
+			}
+
+			reduce(index) {
+				this.quantities[index] = this.quantities[index] || 0;
+				if (this.quantities[index] > 0) {
+					this.quantities[index]--;
+					this.sum--;
+					this.sumPrice -= parseFloat(
+						document.getElementById(`itemPrice-${index}`).textContent
+					);
+				}
+				document.getElementById(`quantity-${index}`).textContent = this.quantities[index];
+			}
+
+			add(index) {
+				this.quantities[index] = this.quantities[index] || 0;
+				this.quantities[index]++;
+				document.getElementById(`quantity-${index}`).textContent = this.quantities[index];
+				this.sum++;
+				this.sumPrice += parseFloat(
+					document.getElementById(`itemPrice-${index}`).textContent
+				);
+			}
+
+			updatetotalGoods() {
+				this.doms.totalGoods.innerHTML = this.sum;
+			}
+
+			updatetotalPrice() {
+				this.doms.totalPrice.innerHTML = this.sumPrice.toFixed(2);
+			}
+		}
+		var trolley = new Trolley();
+		function checkOut() {
+			if (trolley.sum === 0) {
+				alert("Your cart is empty!");
+				return;
+			}
+
+			let orderDetailsArray = [];
+
+			for (const [index, quantity] of Object.entries(trolley.quantities)) {
+				if (quantity > 0) {
+					const dishName = document.getElementById(`goods-title-${index}`).textContent;
+					orderDetailsArray.push([dishName, quantity]);
+				}
+			}
+
+			const totalPrice = trolley.sumPrice.toFixed(2);
+			const deliveryFee = 10;
+			const grandTotal = (trolley.sumPrice + deliveryFee).toFixed(2);
+
+			// Display summary in popup
+			let summaryText = "You have ordered:\n";
+			for (const [dish, qty] of orderDetailsArray) {
+				summaryText += `${dish} x ${qty}\n`;
+			}
+			summaryText += `\nTotal Price: $${totalPrice}\nDelivery Fee: $${deliveryFee.toFixed(
+				2
+			)}\nGrand Total: $${grandTotal}`;
+			console.log("trolley:", trolley.quantities);
+			document.getElementById("orderDetailsInput").value = JSON.stringify(trolley.quantities);
+			showPopup(summaryText);
+		}
+		function showPopup(orderDetails) {
+			document.getElementById("popup-card-context").innerText = orderDetails;
+			document.getElementById("popupCard").style.display = "block";
+		}
+
+		function hidePopup() {
+			document.getElementById("popupCard").style.display = "none";
+		}
+
+		function pay() {
+			hidePopup();
+			console.log("Paying with order details:", trolley.quantities);
+		}
+	</script>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Login</title>
+		<link rel="stylesheet" href="/style.css" />
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=directions_bike,solo_dining,storefront" />
+	</head>
+	<body>
+		<div class="container">
+			<div class="title">
+				<h1>Login Page</h1>
+				<h2>Select Your Role</h2>
+			</div>
+			<form method="POST" action="/login" id="loginForm">
+				<span class="login">
+					<input type="radio" id="radio_customer" name="role" value="customer" />
+					<label for="radio_customer" class="radio-btn"
+						><span class="material-symbols-outlined" style="font-size:105px;">solo_dining</span>
+						<br>
+						<span>I am <br />
+						Customer</span></label
+					>
+					<input type="text" id="customer_name" name="name" placeholder="Your Name"
+						disabled />
+					<button type="submit" class="login-button">Login</button>
+				</span>
+
+				<span class="login">
+					<input type="radio" id="radio_restaurant" name="role" value="restaurants" />
+					<label for="radio_restaurant" class="radio-btn"
+						><span class="material-symbols-outlined" style="font-size: 110px;">storefront</span>
+						<br>
+						<span>I am <br />
+						restaurant owner</span></label
+					>
+					<input type="text" id="restaurants_name" name="name" placeholder="Restaurant Name"
+					  disabled/>
+					<button type="submit" class="login-button">Login</button>
+				</span>
+
+				<span class="login">
+					<input type="radio" id="radio_rider" name="role" value="rider" />
+					<label for="radio_rider" class="radio-btn"
+						><span class="material-symbols-outlined" style="font-size: 100px; margin-top: 12px;">directions_bike</span>
+						<br>
+						<span>I am <br />
+						Rider</span></label
+					>
+					<input type="text" id="rider_name" name="name" placeholder="Your Name"
+						disabled />
+					<button type="submit" class="login-button">Login</button>
+				</span>
+
+				<button type="button" class="signup-button" onclick="window.location.href='/register'">Sign Up</button>
+			</form>
+		</div>
+	</body>
+</html>
+<script>
+	const radios = document.querySelectorAll('input[name="role"]');
+	const textInputs = document.querySelectorAll('input[name="name"]');
+
+	radios.forEach((radio) => {
+		radio.addEventListener("change", () => {
+			textInputs.forEach((input) => {
+				input.disabled = true;
+				input.required = false;
+				input.value = "";
+			});  
+
+			const selectedInput = document.getElementById(`${radio.value}_name`);
+			if (selectedInput) {
+				selectedInput.disabled = false;
+				selectedInput.required = true;
+				selectedInput.focus();
+			}
+		});
+	});
+</script>

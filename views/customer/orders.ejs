@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>My Orders</title>
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+			rel="stylesheet" />
+		<script src="/socket.io/socket.io.js"></script>
+		<link rel="stylesheet" href="/customer_menu.css" />
+	</head>
+	<body>
+		<div class="container py-5">
+			<div class="position-relative mb-4">
+				<h1 class="text-center">My Orders</h1>
+				<a href="/customer" class="btn btn-outline-primary position-absolute top-0 end-0" id="back-button">Back to Restaurants List</a>
+			</div>
+
+			<% if (orders.length === 0) { %>
+				<div class="alert order-alert text-center">
+					<h4>No orders yet</h4>
+					<h6>Start ordering from your favorite restaurants!</h6>
+					<a href="/customer" class="btn btn-primary">Browse Restaurants</a>
+				</div>
+			<% } else { %>
+				<div class="row g-4">
+					<% orders.forEach(order => { %>
+						<div class="col-12" data-order-id="<%= order.id %>">
+							<div class="card shadow-sm" id="restaurant-card">
+								<div class="card-body">
+									<div class="mb-3">
+										<h5 class="card-title mb-1"><%= order.restaurant_name %></h5>
+										<p class="text-muted mb-0">Order #<%= order.id %></p>
+										<small class="text-muted"><%= new Date(order.created_at).toLocaleString() %></small>
+									</div>
+
+									<% if (order.context) { %>
+										<p class="mb-3"><strong>Items:</strong> <%= order.context %></p>
+									<% } %>
+
+									<div class="mb-3">
+										<p class="mb-1"><strong>Delivery Address:</strong> <%= order.customer_address %></p>
+										<% if (order.distance_m) { %>
+											<small class="text-muted">Distance: <%= order.distance_m %> m</small>
+										<% } %>
+									</div>
+
+									<!-- Progress Bar -->
+									<div class="mb-2">
+										<% 
+											let progress = 0;
+											let statusText = '';
+											let progressColor = 'bg-secondary';
+											
+											if (!order.restaurant_completed && !order.rider_name) {
+												progress = 25;
+												statusText = 'Order Received';
+												progressColor = 'colour-25';
+											} else if (order.restaurant_completed && !order.rider_name) {
+												progress = 50;
+												statusText = 'Preparing Complete - Waiting for Rider';
+												progressColor = 'colour-50';
+											} else if (order.rider_name && order.remaining_distance > 0) {
+												progress = 75;
+												statusText = 'Out for Delivery';
+												progressColor = 'colour-75';
+											} else if (order.rider_name && order.remaining_distance === 0) {
+												progress = 100;
+												statusText = 'Delivered';
+												progressColor = 'colour-100';
+											}
+										%>
+										<div class="d-flex justify-content-between align-items-center mb-2">
+											<small class="fw-bold status-text"><%= statusText %></small>
+											<small class="text-muted progress-percent"><%= progress %>%</small>
+										</div>
+										<div class="progress" style="height: 25px;">
+											<div class="progress-bar <%= progressColor %>" role="progressbar" 
+												style="width: <%= progress %>%;" 
+												aria-valuenow="<%= progress %>" 
+												aria-valuemin="0" 
+												aria-valuemax="100">
+											</div>
+										</div>
+									</div>
+
+									<!-- Order Details -->
+									<div class="mt-3">
+										<% if (order.rider_name) { %>
+											<p class="mb-1"><strong>Rider:</strong> <%= order.rider_name %></p>
+											<% if (order.remaining_distance !== null && order.remaining_distance > 0) { %>
+												<p class="mb-0 remaining-distance-text"><strong>Remaining Distance:</strong> <%= order.remaining_distance %> m</p>
+											<% } else if (order.remaining_distance === 0) { %>
+												<p class="mb-0 remaining-distance-text"><strong>Remaining Distance:</strong> 0 m</p>
+											<% } %>
+										<% } %>
+									</div>
+
+									<div class="mt-3 confirm-button-container">
+										<% if (order.rider_name && order.remaining_distance === 0) { %>
+											<form action="/customer/confirm/<%= order.id %>" method="POST">
+												<button type="submit" class="btn btn-success w-100" id="received-button">Confirm Received & Complete Order</button>
+											</form>
+										<% } %>
+									</div>
+								</div>
+							</div>
+						</div>
+					<% }) %>
+				</div>
+			<% } %>
+		</div>
+
+		<script>
+			const socket = io();
+			socket.on('orderAccepted', (data) => {
+				const { orderID, riderName, remainingDistance } = data;
+				const orderCard = document.querySelector(`[data-order-id="${orderID}"]`);
+				
+				if (orderCard) {
+					const progressBar = orderCard.querySelector('.progress-bar');
+					const statusText = orderCard.querySelector('.status-text');
+					const progressPercent = orderCard.querySelector('.progress-percent');
+					
+					progressBar.style.width = '75%';
+					progressBar.className = 'progress-bar bg-primary';
+					progressBar.setAttribute('aria-valuenow', '75');
+					statusText.textContent = 'Out for Delivery';
+					progressPercent.textContent = '75%';
+
+					// Update or create rider info section
+					const orderDetails = orderCard.querySelector('.card-body > .mt-3');
+					if (orderDetails) {
+						orderDetails.innerHTML = `
+							<p class="mb-1"><strong>Rider:</strong> ${riderName}</p>
+							<p class="mb-0 remaining-distance-text"><strong>Remaining Distance:</strong> ${remainingDistance} m</p>
+						`;
+					}
+				}
+			});
+			// Listen for distance updates
+			socket.on('updateDistance', (data) => {
+				const { orderID, remainingDistance } = data;
+				const orderCard = document.querySelector(`[data-order-id="${orderID}"]`);
+				
+				if (orderCard) {
+					// Update remaining distance text
+					let distanceText = orderCard.querySelector('.remaining-distance-text');
+					if (distanceText) {
+						distanceText.innerHTML = `<strong>Remaining Distance:</strong> ${remainingDistance} m`;
+					} else {
+						// If distance text doesn't exist, find or create the order details section
+						const orderDetails = orderCard.querySelector('.card-body > .mt-3');
+						if (orderDetails) {
+							const existingDistance = orderDetails.querySelector('.remaining-distance-text');
+							if (!existingDistance) {
+								orderDetails.innerHTML += `<p class="mb-0 remaining-distance-text"><strong>Remaining Distance:</strong> ${remainingDistance} m</p>`;
+							}
+						}
+					}
+
+					// Update progress bar if distance is still > 0
+					if (remainingDistance > 0) {
+						const progressBar = orderCard.querySelector('.progress-bar');
+						const statusText = orderCard.querySelector('.status-text');
+						const progressPercent = orderCard.querySelector('.progress-percent');
+						
+						progressBar.style.width = '75%';
+						progressBar.className = 'progress-bar bg-primary';
+						progressBar.setAttribute('aria-valuenow', '75');
+						statusText.textContent = 'Out for Delivery';
+						progressPercent.textContent = '75%';
+					}
+				}
+			});
+
+			// Listen for ready to deliver event (restaurant completed)
+			socket.on('readyToDeliver', (data) => {
+				const { orderID } = data;
+				const orderCard = document.querySelector(`[data-order-id="${orderID}"]`);
+				
+				if (orderCard) {
+					// Update progress bar to 50%
+					const progressBar = orderCard.querySelector('.progress-bar');
+					const statusText = orderCard.querySelector('.status-text');
+					const progressPercent = orderCard.querySelector('.progress-percent');
+					
+					progressBar.style.width = '50%';
+					progressBar.className = 'progress-bar bg-warning';
+					progressBar.setAttribute('aria-valuenow', '50');
+					statusText.textContent = 'Preparing Complete - Waiting for Rider';
+					progressPercent.textContent = '50%';
+				}
+			});
+
+			// Listen for order delivered event
+			socket.on('orderDelivered', (data) => {
+				const { orderID } = data;
+				const orderCard = document.querySelector(`[data-order-id="${orderID}"]`);
+				
+				if (orderCard) {
+					// Update progress bar to 100%
+					const progressBar = orderCard.querySelector('.progress-bar');
+					const statusText = orderCard.querySelector('.status-text');
+					const progressPercent = orderCard.querySelector('.progress-percent');
+					
+					progressBar.style.width = '100%';
+					progressBar.className = 'progress-bar bg-success';
+					progressBar.setAttribute('aria-valuenow', '100');
+					statusText.textContent = 'Delivered';
+					progressPercent.textContent = '100%';
+
+					// Update remaining distance to 0
+					const distanceText = orderCard.querySelector('.remaining-distance-text');
+					if (distanceText) {
+						distanceText.innerHTML = `<strong>Remaining Distance:</strong> 0 m`;
+					}
+
+					// Show confirm button
+					const confirmContainer = orderCard.querySelector('.confirm-button-container');
+					if (confirmContainer && !confirmContainer.querySelector('form')) {
+						confirmContainer.innerHTML = `
+							<form action="/customer/confirm/${orderID}" method="POST">
+								<button type="submit" class="btn btn-success w-100">Confirm Received & Complete Order</button>
+							</form>
+						`;
+					}
+				}
+			});
+		</script>
+	</body>
+</html>

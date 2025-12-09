@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Register</title>
+    <link rel="stylesheet" href="/style.css" />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=directions_bike,solo_dining,storefront" />
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <h1>Register</h1>
+            <button type="button" class="return-button" onclick="window.location.href='/'">Back</button>
+            <h2>Create an account</h2>
+            <br />
+        </div>
+
+        <form method="POST" action="/register" id="registerForm">
+            <div class="role_selection">
+                <input type="radio" name="role" value="customer" id="role_customer"/>
+                <label for ="role_customer" class="role-button"><span class="material-symbols-outlined" style="font-size:85px;">solo_dining</span>Customer
+                </label>
+                <br>
+                <input type="radio" name="role" value="restaurants" id="role_restaurant"/>
+                <label for ="role_restaurant" class="role-button" ><span class="material-symbols-outlined" style="font-size: 90px;">storefront</span>Restaurant
+                </label> 
+                <br>
+                <input type="radio" name="role" value="rider" class="role-button" id="role_rider"/>
+                <label for ="role_rider" class="role-button"><span class="material-symbols-outlined" style="font-size: 80px; margin-top: 12px;">directions_bike</span>&nbsp; &nbsp;Rider&nbsp; &nbsp; 
+                </label>
+                <br>
+            </div>
+
+            <div class= "register-input-list">
+                <input type="text" id="reg_name" name="name" placeholder="Your Name" disabled/>
+                <br>
+                <input type="text" id="reg_address" name="address" placeholder="Your Address" disabled/>
+                <br>
+                <input type="text" id="reg_cuisine" name="cuisine_type" placeholder="Cuisine Type" disabled/>
+                <br>
+                <button type="submit" class="register-button">Register</button>
+            </div>
+        </form>
+
+        <script>
+        const roleRadios = document.querySelectorAll('input[name="role"]');
+        const inputName = document.getElementById('reg_name');
+        const inputAddress = document.getElementById('reg_address');
+        const inputCuisine = document.getElementById('reg_cuisine');
+        const textInputs = [inputName, inputAddress, inputCuisine];
+
+        textInputs.forEach(input => input.disabled = true);
+
+        roleRadios.forEach((radio) => {
+            radio.addEventListener("change", () => {
+                textInputs.forEach((input) => {
+                    input.disabled = true;
+                    input.required = false;
+                    input.value = "";
+                });
+
+        if (radio.checked) {
+            inputName.disabled = false;
+            inputName.required = true;
+            
+            switch (radio.value) {
+                case 'customer':
+                    inputAddress.disabled = false;
+                    inputCuisine.disabled = true;
+                    break;
+                case 'restaurants':
+                    inputAddress.disabled = false;
+                    inputCuisine.disabled = false;
+                    inputCuisine.required = true;
+                    break;
+                case 'rider':
+                    inputAddress.disabled = true;
+                    inputCuisine.disabled = true;
+                    break;
+            }
+
+            inputName.focus();
+        }
+    });
+});
+
+
+            if (document.querySelector('input[name="role"]:checked')) {
+                document.querySelector('input[name="role"]:checked').dispatchEvent(new Event('change'));
+            }
+            
+            document.querySelectorAll('input[type="radio"]').forEach((radio) => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.role-button').forEach((label) => {
+                    label.classList.remove('active');
+                });
+
+                const selectedValue = this.value;
+
+                document.querySelectorAll('input[type="radio"]').forEach((radioInput) => {
+                    if (radioInput.value !== selectedValue) {
+                        const label = document.querySelector(`label[for="${radioInput.id}"]`);
+                        if (label) {
+                            label.classList.add('active');
+                        }
+                    }
+                });
+            });
+        });
+        </script>
+    </div>
+</body>
+</html>

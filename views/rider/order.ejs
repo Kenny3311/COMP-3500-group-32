@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Rider Dashboard</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="/rider.css" />
+	</head>
+
+	<body>
+		<div class="container py-5">
+			<div class="position-relative mb-4"></div>
+				<h1 style="text-align: center"><%= riderName %>'s Delivery Process</h1>
+			</div>
+
+			<div id="deliveredPopup" class="overlay">
+				<div class="popup-card">
+					<h3>Order Delivered Successfully!</h3>
+					<button id="confirmDeliveredBtn" class="confirm">
+						Confirm
+					</button>
+				</div>
+			</div>	
+
+		<div class="order-list">
+			<table class="table table-responsive" id="ordersTable"  >
+				<thead>
+					<tr>
+						<th>Order ID</th>
+						<th>Restaurant Name</th>
+						<th>Restaurant Address</th>
+						<th>Customer Name</th>
+						<th>Customer Address</th>
+						<th>Context</th>
+						<th>Order Time</th>
+						<th>Rewards</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><%= order.id %></td>
+						<td><%= order.restaurant_name %></td>
+						<td><%= order.restaurant_address %></td>
+						<td><%= order.customer_name %></td>
+						<td><%= order.customer_address %></td>
+						<td><%= order.context %></td>
+						<td><%= order.created_at %></td>
+						<td>$ <%= order.rewards %></td>
+					</tr>
+				</tbody>
+			</table>
+			<form class="distance">
+				<h3>Remaining Distance to Customer:</h3>
+				<input
+					type="range"
+					id="distanceSlider"
+					min="0"
+					max="<%= order.distance_m %>"
+					step="1"
+					value="<%= order.distance_m - order.remaining_distance %>"
+					class="distanceSlider" />
+
+				<div class="distance-action">
+					<label for="distanceSlider" id="distance_label"
+						>Remaining distance: <%= order.remaining_distance %> m</label
+					>
+					<br />
+					<div class="button-container">
+						<button type="button" class="distance-button" onclick="SendDistance()">Send distance</button>
+						<a href="#deliveredPopup" class="completed-button" onclick=" MarkAsDelivered()" id="complete_button">Mark as Delivered</a>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
+
+<script>
+    const remaining = <%= order.remaining_distance %>;
+    const slider = document.getElementById('distanceSlider');
+    const max = parseFloat(slider.max);
+    
+    function updateFill() {
+        const min = parseFloat(slider.min);
+        const value = parseFloat(slider.value);
+        const percent = ((value - min) / (max - min)) * 100;
+
+        slider.style.setProperty("--value-percent", percent);
+        document.getElementById("distance_label").innerText = `Remaining distance: ${max - value} m`;
+
+        const completeButton = document.getElementById("complete_button");
+        if (value >= max) {
+            completeButton.classList.remove('disabled');
+        } else {
+            completeButton.classList.add('disabled');
+        }
+    }
+    
+    function SendDistance() {
+        const newRemaining = max - parseFloat(slider.value);
+        fetch(`/rider/update-distance/<%= order.id %>`, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ remaining_distance: newRemaining })
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Distance updated successfully!');
+            } else {
+                alert('Failed to update distance.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating distance.');
+        });
+    }
+
+    function MarkAsDelivered(event) {
+        const completeButton = document.getElementById("complete_button");
+
+        if (completeButton.classList.contains('disabled')) {
+            event.preventDefault(); // Stop the action if disabled
+            console.log("Button is disabled.");
+            return;
+        }
+
+        fetch(`/rider/mark-delivered/<%= order.id %>`, {
+            method: 'POST'
+        })
+        .then(response => {
+            if (response.ok) {
+                showDeliveredPopup();
+            } else {
+                alert('Failed to mark order as delivered.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error marking order as delivered.');
+        });
+    }
+    
+    function showDeliveredPopup() {
+        const popup = document.getElementById('deliveredPopup');
+        const confirmBtn = document.getElementById('confirmDeliveredBtn');
+
+        popup.style.display = 'flex';
+
+        confirmBtn.onclick = () => {
+            window.location.href = '/rider';
+        };
+    }
+
+    slider.addEventListener('input', updateFill);
+    updateFill(); // Initialize the display
+</script>
