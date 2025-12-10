@@ -38,7 +38,7 @@ router.get("/", (req, res) => {
 		
 		res.render("rider/dashboard", { orders:orders, totalRewardsIn: totalRewards ,riderNameIn:riderName});
 	} catch (err) {
-		console.error("❌ Error loading dashboard:", err);
+		console.error("Error loading dashboard:", err);
 		res.status(500).send("Internal server error");
 	}
 });
@@ -66,7 +66,7 @@ router.post("/accept/:id", (req, res) => {
 		io.emit("orderAccepted", { orderID: orderId, riderName: riderName, remainingDistance: orderCheck.distance_m });
 		res.status(200).json({ redirect: `/rider/order?name=${encodeURIComponent(riderName)}` });
 	} catch (err) {
-		console.error("❌ Error accepting order:", err);
+		console.error("Error accepting order:", err);
 		res.status(500).json({ error: "Failed to accept order" });
 	}
 });
@@ -99,7 +99,7 @@ router.get("/order", (req, res) => {
 
 		res.render("rider/order", { riderName, order: orders[0] });
 	} catch (err) {
-		console.error("❌ Error loading history:", err);
+		console.error("Error loading history:", err);
 		res.status(500).send("Internal server error");
 	}
 });
@@ -113,7 +113,7 @@ router.post("/update-distance/:id", (req, res) => {
 		const io = req.app.get("io");
 		io.emit("updateDistance", { orderID: orderId, remainingDistance: distance });
 	} catch (err) {
-		console.error("❌ Error loading history:", err);
+		console.error("Error loading history:", err);
 		res.status(500).send("Internal server error");
 	}
 });
@@ -127,7 +127,7 @@ router.post("/mark-delivered/:id", (req, res) => {
 		io.emit("orderDelivered", { orderID: orderId});
 		res.redirect(`/rider/`);
 	} catch (err) {
-		console.error("❌ Error marking order as delivered:", err);
+		console.error("Error marking order as delivered:", err);
 		res.status(500).send("Internal server error");
 	}
 });

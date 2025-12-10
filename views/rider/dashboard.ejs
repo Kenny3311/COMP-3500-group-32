@@ -94,20 +94,17 @@ async function acceptOrder(orderId) {
 		}
 
 		if (!res.ok) {
-			// ✅ Show server error message if available
-			alert(data?.error || "❌ Failed to accept order");
+			alert(data?.error || "Failed to accept order");
 			return;
 		}
-
-		// ✅ Redirect on success
 		if (data.redirect) {
 			window.location.href = data.redirect;
 		} else {
-			alert("❌ No redirect URL provided by server");
+			alert("No redirect URL provided by server");
 		}
 	} catch (err) {
 		console.error(err);
-		alert("⚠️ Error connecting to server");
+		alert("Error connecting to server");
 	}
 }
 </script>

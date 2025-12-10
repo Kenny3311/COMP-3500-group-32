@@ -22,10 +22,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set("io", io);
 io.on("connection", (socket) => {
-	console.log("✅ A user connected, socket ID:", socket.id);
+	console.log("A user connected, socket ID:", socket.id);
 
 	socket.on("disconnect", () => {
-		console.log("❌ User disconnected, socket ID:", socket.id);
+		console.log("User disconnected, socket ID:", socket.id);
 	});
 });
 app.use(
@@ -127,5 +127,5 @@ app.use("/rider", riderRouter);
 
 const PORT = 3000;
 server.listen(PORT, () => {
-	console.log(`🚀 Server running on http://localhost:${PORT}`);
+	console.log(` Server running on http://localhost:${PORT}`);
 });
